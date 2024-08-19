@@ -1,0 +1,33 @@
+import numpy as np
+from PIL import Image
+from wordcloud import WordCloud
+import matplotlib.pyplot as plt
+
+# Load the image you uploaded
+image_path = "C:\\Users\\dazvi\\OneDrive\\Desktop\\NLTP projects\\12_year_me.png"
+
+mask_image = np.array(Image.open(image_path))
+
+# Create a list of words and their frequencies
+text = """
+I also want to express my profound gratitude for the role she played in my life. Despite the mistakes I made, her presence and the challenges she represented contributed to my growth and strength. Without her, I wouldn’t be the person I am today. The struggles and realizations have made me more resilient and compassionate.
+
+Please know that you are worthy of love and respect. The way we treat others should reflect the kindness we wish to see in the world. I hope you can forgive me for the pain I caused and understand that this experience has taught me the importance of empathy and self-improvement.
+
+As you continue to grow, remember to be gentle with yourself and others. The journey of life is filled with lessons, and it’s through these lessons that we become better versions of ourselves. I am committed to honoring these lessons and ensuring that they guide me towards a more thoughtful and compassionate future.
+
+Thank you for being a part of my journey. Your experiences, even the difficult ones, have helped shape who I am today. I am grateful for the strength and perspective I have gained, and I hope you can find peace and understanding in this reflection.
+
+With heartfelt apologies and gratitude,
+shivani
+
+"""
+
+# Generate the word cloud
+wordcloud = WordCloud(background_color="white", mask=mask_image, contour_color='black', contour_width=3).generate(text)
+
+# Display the word cloud
+plt.figure(figsize=[8,8])
+plt.imshow(wordcloud, interpolation="bilinear")
+plt.axis("off")
+plt.show()
