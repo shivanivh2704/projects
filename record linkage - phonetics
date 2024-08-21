@@ -1,0 +1,52 @@
+
+import numpy as np 
+import pandas as pd 
+import recordlinkage
+from recordlinkage.datasets import load_febrl4
+
+dfA, dfB, true_links = load_febrl4(return_links=True)
+print("Dataset A")
+display(dfA.sort_index().head())
+print("Dataset B")
+display(dfB.sort_index().head())
+from recordlinkage.preprocessing import phonetic
+
+katies = pd.Series(["Katy", "Kaytee", "Katie", "Katee"])
+phonetic_katies = phonetic(katies, "soundex")
+# Add a phonetic version of the first and last names to the two datasets
+dfA["phonetic_given_name"] = phonetic(dfA["given_name"], "soundex")
+dfB["phonetic_given_name"] = phonetic(dfB["given_name"], "soundex")
+dfA["phonetic_surname"] = phonetic(dfA["surname"], "soundex")
+dfB["phonetic_surname"] = phonetic(dfB["surname"], "soundex")
+
+dfA["initials"] = (dfA["given_name"].str[0]  + dfA["surname"].str[0])
+dfB["initials"] = (dfB["given_name"].str[0]  + dfB["surname"].str[0])
+
+# Cast the social security number to a "numeric"
+dfA['soc_sec_id']= pd.to_numeric(dfA['soc_sec_id'])
+dfB['soc_sec_id']= pd.to_numeric(dfB['soc_sec_id'])
+
+display(dfA[["given_name", "phonetic_given_name", "surname", "phonetic_surname", "initials", "soc_sec_id"]].head())
+indexer = recordlinkage.Index()
+indexer.block('initials')
+candidate_links = indexer.index(dfA, dfB)
+
+print(candidate_links)
+dfA.loc['rec-1070-org']
+dfB.loc['rec-684-dup-0']
+compare = recordlinkage.Compare()
+
+compare.exact('phonetic_given_name', 'phonetic_given_name', label="phonetic_given_name")
+compare.exact('phonetic_surname', 'phonetic_surname', label='phonetic_surname')
+compare.string('given_name', 'given_name', method='jarowinkler', label="given_name")
+compare.string('surname', 'surname', method='jarowinkler', label="surname")
+compare.string('suburb', 'suburb', method='jarowinkler', label="suburb")
+compare.string('state', 'state', method='jarowinkler', label="state")
+compare.string('address_1', 'address_1', method='jarowinkler', label="address_1")
+compare.numeric("soc_sec_id","soc_sec_id", label="soc_sec_id")
+
+features = compare.compute(candidate_links, dfA, dfB)
+features
+features.loc['rec-1070-org']
+dfB.loc['rec-2942-dup-0']
+dfA.loc['rec-1070-org']
